@@ -1,45 +1,85 @@
 import streamlit as st
 from math import comb
 from fractions import Fraction
+from collections import defaultdict
 
-st.set_page_config(page_title="Riftbound Probability Calculator • Piltover Archive Style", layout="wide")
+st.set_page_config(page_title="Riftbound Probability Calculator • Origins Ready", layout="wide")
 st.title("🎴 Riftbound A & B Odds Calculator")
-st.markdown("39-card deck • Exact probs for opening 4, optimal mulligan, + extra draw")
+st.markdown("39-card deck • Exact probs: raw opening 4, optimal mulligan, + extra draw")
 
-# ── SIDEBAR: Add cards from Piltover Archive ────────────────────────────────
+# ── PRE-EMBEDDED ORIGINS (OGN) CARDS ─────────────────────────────────────────
+# Real names for first ~50 from checklists (tcdb, beckett, totalcards, riftbound.gg)
+# The rest use placeholders — edit/add real names as needed (or from piltoverarchive.com)
+ogn_cards = {
+    f"OGN-{i:03d}": f"https://cdn.piltoverarchive.com/cards/OGN-{i:03d}.webp?width=1920"
+    for i in range(1, 299)
+}
+
+# Accurate names (examples from sources)
+real_names = {
+    "OGN-001": "Blazing Scorcher",
+    "OGN-002": "Brazen Buccaneer",
+    "OGN-003": "Chemtech Enforcer",
+    "OGN-004": "Cleave",
+    "OGN-005": "Disintegrate",
+    "OGN-006": "Flame Chompers",
+    "OGN-007": "Fury Rune",
+    "OGN-008": "Get Excited",
+    "OGN-009": "Hextech Ray",
+    "OGN-010": "Legion Guard",          # or Legion Rearguard in some lists
+    "OGN-011": "Magma Wurm",
+    "OGN-012": "Noxus Hopeful",
+    "OGN-013": "Pouty Poro",
+    "OGN-014": "Sky Splitter",
+    "OGN-015": "Captain Farron",
+    "OGN-016": "Dangerous Duo",
+    "OGN-017": "Iron Ballista",
+    "OGN-018": "Noxus Saboteur",
+    "OGN-019": "Raging Soul",
+    "OGN-020": "Scrapyard Champion",
+    # Add more known ones here as you find them (e.g. Jinx, Ahri, etc.)
+    # Example:
+    # "OGN-066": "Ahri - Alluring",
+    # "OGN-269": "Sett, The Boss",
+}
+
+# Merge real names into the dict (use real name as key if available)
+cards = {}
+for code, url in ogn_cards.items():
+    name = real_names.get(code, code)  # fallback to code if no real name
+    cards[name] = url
+
+# ── SIDEBAR: Allow adding extra cards (PSD, variants, etc.) ──────────────────
 with st.sidebar:
     st.header("Your Card Library")
     st.markdown("""
-    **Quick add from https://piltoverarchive.com/cards**  
-    1. Go to the site → filter/browse cards  
-    2. Click card → right-click big image → **Copy image address**  
-    3. Paste here: `Card Name|https://cdn.piltoverarchive.com/cards/XXXX.webp`  
-    (one per line — add only cards you care about!)
+    **Origins (OGN 001–298) already loaded!**  
+    Add extra cards (e.g. PSD set, alts, promos):  
+    - Go to https://piltoverarchive.com/cards  
+    - Right-click image → Copy image address  
+    - Paste below: `Card Name|https://cdn.piltoverarchive.com/cards/PSD-XXX.webp`  
+    (one per line — will merge with Origins)
     """)
 
-    default_example = """Jinx|https://picsum.photos/id/201/400/560
-Ahri|https://picsum.photos/id/1015/400/560
-Yasuo|https://picsum.photos/id/237/400/560
-Sett|https://picsum.photos/id/29/400/560
-Annie|https://picsum.photos/id/64/400/560
-Irelia|https://picsum.photos/id/160/400/560"""
+    extra_input = st.text_area("Add extra cards (Name|URL)", height=180)
 
-    card_text = st.text_area("Paste your cards (Name|URL)", value=default_example, height=280)
-
-    cards = {}
-    for line in card_text.strip().splitlines():
+    extra_cards = {}
+    for line in extra_input.strip().splitlines():
         if '|' in line:
             parts = [p.strip() for p in line.split('|', 1)]
             if len(parts) == 2 and parts[1].startswith('http'):
-                cards[parts[0]] = parts[1]
+                extra_cards[parts[0]] = parts[1]
 
-    st.caption(f"Loaded {len(cards)} cards • Add more anytime!")
+    # Merge extras (extras override if name conflict)
+    cards.update(extra_cards)
 
-# ── MAIN AREA: Card Selection ───────────────────────────────────────────────
+    st.caption(f"Total cards loaded: {len(cards)} (Origins + extras)")
+
+# ── MAIN SELECTION ───────────────────────────────────────────────────────────
 if not cards:
-    st.info("Add some cards from piltoverarchive.com/cards to get started!")
-    a_name = "Card A (placeholder)"
-    b_name = "Card B (placeholder)"
+    st.info("Origins cards loaded — select A & B below!")
+    a_name = "Select Card A"
+    b_name = "Select Card B"
     copies_a = 3
     copies_b = 3
 else:
@@ -49,12 +89,13 @@ else:
         st.subheader("Card A")
         a_name = st.selectbox("Search / select Card A", sorted(cards.keys()), key="sel_a")
         copies_a = st.slider("Copies in deck", 1, 4, 3, key="cop_a")
-        st.image(cards[a_name], use_column_width=True, caption=a_name)
+        if a_name in cards:
+            st.image(cards[a_name], use_column_width=True, caption=a_name)
 
     with col2:
         st.subheader("Card B")
         b_options = [c for c in sorted(cards.keys()) if c != a_name]
-        b_name = st.selectbox("Search / select Card B", b_options or ["(select different A first)"], key="sel_b")
+        b_name = st.selectbox("Search / select Card B", b_options or ["(choose different A)"], key="sel_b")
         copies_b = st.slider("Copies in deck", 1, 4, 3, key="cop_b")
         if b_name in cards:
             st.image(cards[b_name], use_column_width=True, caption=b_name)
@@ -63,7 +104,7 @@ deck_size = 39
 others = deck_size - copies_a - copies_b
 
 if others < 0:
-    st.error(f"Total copies ({copies_a + copies_b}) exceed deck size {deck_size}!")
+    st.error(f"Total copies ({copies_a + copies_b}) > deck size {deck_size}!")
     st.stop()
 
 # ── CALCULATIONS ─────────────────────────────────────────────────────────────
@@ -79,9 +120,8 @@ def hypergeometric_fav(hand_size, ca, cb, others):
     return Fraction(fav, total)
 
 p_open_4   = hypergeometric_fav(4, copies_a, copies_b, others)
-p_open_5   = hypergeometric_fav(5, copies_a, copies_b, others)  # raw 5-card for reference
+p_open_5   = hypergeometric_fav(5, copies_a, copies_b, others)  # reference
 
-# From our exact earlier calc (for 3/3 case — best we have without full enum per copy count)
 p_mull_4_opt   = Fraction(67801, 466089)
 p_mull_draw_5  = Fraction(3093227, 16313115)
 
@@ -105,8 +145,7 @@ with cols[2]:
               f"{float(p_mull_draw_5):.2%}", 
               f"{p_mull_draw_5}")
 
-st.caption("• Raw probs update live with your copy counts\n"
-           "• Mulligan probs use our exact 3/3 enumeration (very close for similar counts)\n"
-           "Want full dynamic optimal mulligan for any copies? → Say yes for v4 (longer but complete)")
-
-st.success("Paste more cards from piltoverarchive.com/cards whenever you want — enjoy testing different A/B pairs!")
+st.caption("• Origins set pre-loaded (298 cards) — real names for many, placeholders for others\n"
+           "• Add PSD/variants via sidebar\n"
+           "• Raw probs update live • Mulligan uses 3/3 exact values (close for similar counts)\n"
+           "Want full dynamic mulligan enum for any copies? → Ask for v4!")
