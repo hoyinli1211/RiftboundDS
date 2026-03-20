@@ -6,6 +6,8 @@ st.set_page_config(page_title="Riftbound Prob Calculator - 4 Scenarios", layout=
 st.title("🎴 Riftbound Final Hand Probabilities")
 st.markdown("N=39 deck • P(≥ req_A of A **and** ≥ req_B of B) in final hand • Origins cards pre-loaded")
 
+
+real_names = {}
 # Generate all 298
 cards = {}
 for i in range(1, 299):
