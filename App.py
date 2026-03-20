@@ -11,26 +11,7 @@ st.markdown("**39-card deck** • Exact P(≥ req_A of A **and** ≥ req_B of B)
 # Real names for known cards (from checklists: beckett, totalcards, getcollectr, riftbound.gg)
 # Rest use OGN-XXX as display name (searchable in dropdown)
 real_names = {
-    "OGN-001": "Blazing Scorcher",
-    "OGN-002": "Brazen Buccaneer",
-    "OGN-003": "Chemtech Enforcer",
-    "OGN-004": "Cleave",
-    "OGN-005": "Disintegrate",
-    "OGN-006": "Flame Chompers",
-    "OGN-007": "Fury Rune",
-    "OGN-008": "Get Excited",
-    "OGN-009": "Hextech Ray",
-    "OGN-010": "Legion Rearguard",  # or Legion Guard in some lists
-    "OGN-011": "Magma Wurm",
-    "OGN-012": "Noxus Hopeful",
-    "OGN-013": "Pouty Poro",
-    "OGN-014": "Sky Splitter",
-    "OGN-015": "Captain Farron",
-    "OGN-016": "Dangerous Duo",
-    "OGN-017": "Iron Ballista",
-    "OGN-018": "Noxus Saboteur",
-    "OGN-019": "Raging Soul",
-    "OGN-020": "Scrapyard Champion",
+
     # Add more known Champions/important cards as you find them
     # "OGN-066": "Ahri - Alluring",  # example placeholder - replace with real if confirmed
     # "OGN-269": "Sett, The Boss",
