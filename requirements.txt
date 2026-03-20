@@ -1,0 +1,3 @@
+streamlit>=1.38.0
+pandas>=2.2.0              # If you ever want to show probability tables or export CSV
+plotly>=5.18.0             # Nice interactive charts for prob breakdowns
